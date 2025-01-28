@@ -8,20 +8,32 @@
 import Foundation
 
 class ListViewModel : ObservableObject {
-    @Published var items: [ItemModel] = []
+    @Published var items: [ItemModel] = [] {
+        didSet {
+            save()
+        }
+    }
+    let itemKey = "item_list"
     
     init(){
         getItem()
     }
     
     func getItem() {
-        let newItem = [
-            ItemModel(title: "This is the first item!", isCompleted: true),
-            ItemModel(title: "This is the second item!", isCompleted: false),
-            ItemModel(title: "This is the third item!", isCompleted: false),
-            ItemModel(title: "This is the fourth item!", isCompleted: false)
-        ]
-        items.append(contentsOf: newItem)
+//        let newItem = [
+//            ItemModel(title: "This is the first item!", isCompleted: true),
+//            ItemModel(title: "This is the second item!", isCompleted: false),
+//            ItemModel(title: "This is the third item!", isCompleted: false),
+//            ItemModel(title: "This is the fourth item!", isCompleted: false)
+//        ]
+//        items.append(contentsOf: newItem)
+        
+        guard
+            let data = UserDefaults.standard.data(forKey: itemKey),
+            let savedData = try? JSONDecoder().decode([ItemModel].self, from: data)
+        else {return}
+        
+        self.items = savedData
     }
     
     func deleteItem(IndexSet: IndexSet){
@@ -40,6 +52,12 @@ class ListViewModel : ObservableObject {
     func updateItem(item: ItemModel) {
         if let index = items.firstIndex(where: {$0.id == item.id}) {
             items[index] = item.updateCompletion()
+        }
+    }
+    
+    func save() {
+        if let encodeData = try? JSONEncoder().encode(items) {
+            UserDefaults.standard.set(encodeData, forKey: itemKey)
         }
     }
 }
