@@ -9,7 +9,12 @@ import SwiftUI
 
 struct AddView: View {
     
+    @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var listViewMode: ListViewModel
     @State var text: String = ""
+    @State var aleartMsg: String = ""
+    @State var isShowAleart: Bool = false
+    
     var body: some View {
         ScrollView {
             VStack {
@@ -20,7 +25,7 @@ struct AddView: View {
                     .cornerRadius(10)
                 
                 Button {
-                    
+                    savedItem()
                 } label: {
                     Text("Save".uppercased())
                         .foregroundColor(.white)
@@ -34,6 +39,28 @@ struct AddView: View {
             .padding(14)
         }
         .navigationTitle("Add an item 🖊️")
+        .alert(isPresented: $isShowAleart, content: getAleart)
+    }
+    
+    func savedItem() {
+        if isTextLong() == true {
+            listViewMode.addItem(title: text)
+            presentationMode.wrappedValue.dismiss()
+        }
+        
+    }
+    
+    func isTextLong() -> Bool {
+        if text.count < 3 {
+            aleartMsg = "Your hew todo item must be at least 3 character long !!!"
+            isShowAleart.toggle()
+            return false
+        }
+        return true
+    }
+    
+    func getAleart() -> Alert {
+        return Alert(title: Text(aleartMsg))
     }
 }
 
